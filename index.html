@@ -16,16 +16,21 @@
       margin: 0;
       min-height: 100vh;
       display: grid;
-      place-items: center;
+      place-items: start center;
       padding: 32px 16px;
     }
 
     main {
       width: min(720px, 100%);
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
       background: #ffffff;
       border: 1px solid #dfe3ea;
       border-radius: 8px;
-      box-shadow: 0 18px 48px rgba(32, 36, 44, 0.10);
+      box-shadow: 0 4px 16px rgba(32, 36, 44, 0.07);
       overflow: hidden;
     }
 
@@ -35,30 +40,89 @@
     }
 
     h1 {
-      margin: 0 0 8px;
-      font-size: clamp(28px, 5vw, 40px);
+      margin: 0 0 6px;
+      font-size: clamp(24px, 5vw, 36px);
       line-height: 1.05;
-      letter-spacing: 0;
     }
 
-    p {
+    .subtitle {
       margin: 0;
+      font-size: 14px;
       color: #5c6573;
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
+    /* 実験ブロック */
+    .lab {
+      padding: 20px 28px 24px;
+    }
+
+    .lab-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .lab-block {
+      display: grid;
+      gap: 6px;
+    }
+
+    .lab-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #1f6feb;
+    }
+
+    .lab-field {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #c8ced8;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font: inherit;
+      font-size: 14px;
+      line-height: 1.6;
+      resize: vertical;
+      color: #20242c;
+      background: #fafbfd;
+    }
+
+    .lab-field:focus {
+      outline: none;
+      border-color: #1f6feb;
+      background: #fff;
+    }
+
+    .lab-save {
+      justify-self: end;
+      font-size: 13px;
+      padding: 8px 14px;
+    }
+
+    /* タスクセクション */
     section {
       padding: 24px 28px 28px;
+    }
+
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #8892a0;
     }
 
     form {
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 10px;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
 
-    input {
+    input[type="text"] {
       min-width: 0;
       border: 1px solid #c8ced8;
       border-radius: 6px;
@@ -122,12 +186,30 @@
       padding: 0;
     }
 
+    .save-notice {
+      font-size: 12px;
+      color: #1f6feb;
+      text-align: right;
+      margin-top: 4px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .save-notice.show {
+      opacity: 1;
+    }
+
     @media (max-width: 560px) {
+      body {
+        padding: 16px 12px;
+      }
+
       form {
         grid-template-columns: 1fr;
       }
 
       header,
+      .lab,
       section {
         padding-left: 18px;
         padding-right: 18px;
@@ -137,20 +219,80 @@
 </head>
 <body>
   <main>
-    <header>
-      <h1>Codex Demo</h1>
-      <p>小さなタスクを追加、完了、削除できるだけのテスト用ミニアプリです。</p>
-    </header>
-    <section>
-      <form id="taskForm">
-        <input id="taskInput" type="text" placeholder="例: READMEを書く" autocomplete="off">
-        <button type="submit">追加</button>
-      </form>
-      <ul id="taskList" aria-live="polite"></ul>
-    </section>
+    <!-- ヘッダー -->
+    <div class="card">
+      <header>
+        <h1>Codex Demo</h1>
+        <p class="subtitle">スマホから AI エージェントへ開発タスクを投げる実験場</p>
+      </header>
+
+      <!-- 実験管理ブロック -->
+      <div class="lab">
+        <div class="lab-grid">
+          <div class="lab-block">
+            <div class="lab-label">今日の実験</div>
+            <textarea id="labExperiment" class="lab-field" rows="2" placeholder="例: localStorage でタスクを永続化する"></textarea>
+          </div>
+          <div class="lab-block">
+            <div class="lab-label">次に投げる指示</div>
+            <textarea id="labNextTask" class="lab-field" rows="3" placeholder="例: タスクにメモ欄を追加して。入力は任意で、localStorage に保存すること。"></textarea>
+          </div>
+          <div class="lab-block">
+            <div class="lab-label">完了条件</div>
+            <textarea id="labDoneCondition" class="lab-field" rows="2" placeholder="例: GitHub Pages でメモが表示・保存される"></textarea>
+          </div>
+          <button class="lab-save" id="labSaveBtn" type="button">保存</button>
+          <div class="save-notice" id="saveNotice">保存しました</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- タスクリスト -->
+    <div class="card">
+      <section>
+        <div class="section-title">タスク</div>
+        <form id="taskForm">
+          <input id="taskInput" type="text" placeholder="例: READMEを書く" autocomplete="off">
+          <button type="submit">追加</button>
+        </form>
+        <ul id="taskList" aria-live="polite"></ul>
+      </section>
+    </div>
   </main>
 
   <script>
+    // --- 実験メモ ---
+    const LAB_KEY = "codex-demo-lab";
+    const labFields = {
+      experiment: document.querySelector("#labExperiment"),
+      nextTask: document.querySelector("#labNextTask"),
+      doneCondition: document.querySelector("#labDoneCondition"),
+    };
+    const saveNotice = document.querySelector("#saveNotice");
+
+    function loadLab() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(LAB_KEY)) || {};
+        labFields.experiment.value = saved.experiment || "";
+        labFields.nextTask.value = saved.nextTask || "";
+        labFields.doneCondition.value = saved.doneCondition || "";
+      } catch {}
+    }
+
+    function saveLab() {
+      localStorage.setItem(LAB_KEY, JSON.stringify({
+        experiment: labFields.experiment.value,
+        nextTask: labFields.nextTask.value,
+        doneCondition: labFields.doneCondition.value,
+      }));
+      saveNotice.classList.add("show");
+      setTimeout(() => saveNotice.classList.remove("show"), 1500);
+    }
+
+    document.querySelector("#labSaveBtn").addEventListener("click", saveLab);
+    loadLab();
+
+    // --- タスクリスト ---
     const form = document.querySelector("#taskForm");
     const input = document.querySelector("#taskInput");
     const list = document.querySelector("#taskList");
