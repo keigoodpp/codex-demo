@@ -1,0 +1,20 @@
+{
+  "name": "codex-demo",
+  "version": "1.0.0",
+  "description": "Codexの動き方を試すための、依存関係なしの小さなHTMLアプリです。",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:36613/git/keigoodpp/codex-demo"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "jsdom": "^29.1.1"
+  }
+}
