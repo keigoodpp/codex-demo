@@ -87,6 +87,28 @@ describe("タスクの削除", () => {
   });
 });
 
+
+
+describe("タスク進捗サマリー", () => {
+  test("初期表示で完了数が表示される", () => {
+    const { window } = createDOM();
+    const summary = window.document.querySelector("#taskSummary");
+    assert.equal(summary.textContent, "完了 1 / 3");
+  });
+
+  test("完了トグルでサマリーが更新される", () => {
+    const { window } = createDOM();
+    const list = window.document.querySelector("#taskList");
+    const summary = window.document.querySelector("#taskSummary");
+
+    const secondItem = list.querySelectorAll("li")[1];
+    const toggleBtn = secondItem.querySelector("button");
+    toggleBtn.dispatchEvent(new window.MouseEvent("click"));
+
+    assert.equal(summary.textContent, "完了 2 / 3");
+  });
+});
+
 describe("localStorage 永続化", () => {
   test("タスク追加後にlocalStorageへ保存される", () => {
     const { window } = createDOM();

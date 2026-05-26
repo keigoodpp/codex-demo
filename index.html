@@ -199,6 +199,12 @@
       opacity: 1;
     }
 
+    .task-summary {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: #5c6573;
+    }
+
     @media (max-width: 560px) {
       body {
         padding: 16px 12px;
@@ -255,6 +261,7 @@
           <input id="taskInput" type="text" placeholder="例: READMEを書く" autocomplete="off">
           <button type="submit">追加</button>
         </form>
+        <p id="taskSummary" class="task-summary" aria-live="polite"></p>
         <ul id="taskList" aria-live="polite"></ul>
       </section>
     </div>
@@ -296,6 +303,7 @@
     const form = document.querySelector("#taskForm");
     const input = document.querySelector("#taskInput");
     const list = document.querySelector("#taskList");
+    const summary = document.querySelector("#taskSummary");
 
     const STORAGE_KEY = "codex-demo-tasks";
 
@@ -323,6 +331,8 @@
 
     function render() {
       list.innerHTML = "";
+      const doneCount = tasks.filter((task) => task.done).length;
+      summary.textContent = `完了 ${doneCount} / ${tasks.length}`;
 
       tasks.forEach((task, index) => {
         const item = document.createElement("li");
